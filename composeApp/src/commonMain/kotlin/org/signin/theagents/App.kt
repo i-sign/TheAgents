@@ -1,44 +1,89 @@
 package org.signin.theagents
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
+import TheAgents.composeApp.BuildConfig
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.painterResource
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
+import io.github.aakira.napier.Napier
+import kotlinx.coroutines.CoroutineScope
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.core.context.startKoin
+import org.koin.dsl.module
+import org.koin.mp.KoinPlatform
+import org.signin.theagents.service.SessionManager
+import org.signin.theagents.service.getLogger
+import org.signin.theagents.service.getPlatformSettings
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.Navigator
+import org.signin.theagents.theme.AppTheme
+import org.signin.theagents.ui.LoginScreen
 
-import theagents.composeapp.generated.resources.Res
-import theagents.composeapp.generated.resources.compose_multiplatform
+internal val LocalAppScope =
+    compositionLocalOf<CoroutineScope> { error("LocalAppScope is not provided") }
+internal val LocalPhoneMode = compositionLocalOf { mutableStateOf(false) }
 
 @Composable
 @Preview
-fun App() {
-    MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
+internal fun App(systemAppearance: (isLight: Boolean) -> Unit = {}) {
+
+    initApp()
+    Napier.d("Start application")
+    val sessionManager: SessionManager by remember { KoinPlatform.getKoin().inject() }
+    DisposableEffect(Unit) {
+        onDispose {
+            Napier.d("Stop application")
+            sessionManager.stop()
+        }
+    }
+    CompositionLocalProvider(
+        LocalAppScope provides rememberCoroutineScope()
+    ) {
+        var isPhone by LocalPhoneMode.current
+        val density = LocalDensity.current
+
+        Box(Modifier.fillMaxSize().onGloballyPositioned {
+            with(density) {
+                isPhone = it.size.width.toDp() <= 700.dp
             }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
+        }) {
+            AppTheme(systemAppearance) {
+                var launchScreen by remember { mutableStateOf<Screen?>(null) }
+                LaunchedEffect(Unit) {
+                    val hasPreviousSession = sessionManager.tryRestoreSession()
+                    launchScreen = if (hasPreviousSession) {
+                        return@LaunchedEffect
+                    } else {
+                        LoginScreen()
+                    }
                 }
+                launchScreen?.let { Navigator(it) }
             }
         }
+    }
+}
+
+private var isInit = false
+private fun initApp() {
+    if (isInit) {
+        Napier.e("Second initialization!")
+        return
+    }
+    isInit = true
+
+    if (BuildConfig.DEBUG) {
+        Napier.base(getLogger("TheAgents"))
+    }
+
+    val appModule = module {
+        single { getPlatformSettings() }
+        single { SessionManager(get()) }
+        factory { get<SessionManager>().getClient() }
+    }
+    startKoin {
+        modules(appModule)
     }
 }

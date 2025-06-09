@@ -3,13 +3,22 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
+    alias(libs.plugins.buildConfig)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
 }
+
+val localProps = Properties()
+if (rootProject.file("local.properties").exists()) {
+    localProps.load(rootProject.file("local.properties").inputStream())
+}
+val isDebug = localProps.getOrDefault("debug", "false") == "true"
+val matrixUrl = localProps.getOrDefault("matrixUrl", "").toString()
 
 kotlin {
     androidTarget {
@@ -30,31 +39,15 @@ kotlin {
         }
     }
     
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        moduleName = "composeApp"
-        browser {
-            val rootDirPath = project.rootDir.path
-            val projectDirPath = project.projectDir.path
-            commonWebpackConfig {
-                outputFileName = "composeApp.js"
-                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-                    static = (static ?: mutableListOf()).apply {
-                        // Serve sources to debug inside browser
-                        add(rootDirPath)
-                        add(projectDirPath)
-                    }
-                }
-            }
-        }
-        binaries.executable()
-    }
-    
     sourceSets {
         
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.kotlinx.coroutines.android)
+            implementation(libs.ktor.client.okhttp)
+            implementation(libs.trixnity.client.media.okio)
+            implementation(libs.trixnity.client.repository.realm)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -65,6 +58,24 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.voyager.navigator)
+            implementation(compose.materialIconsExtended)
+            implementation(libs.napier)
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.datetime)
+            implementation(libs.koin.core)
+            implementation(libs.trixnity.client)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.logging)
+            implementation(libs.multiplatform.settings)
+
+        }
+        iosMain {
+            dependencies {
+                implementation(libs.ktor.client.darwin)
+                implementation(libs.trixnity.client.media.okio)
+                implementation(libs.trixnity.client.repository.realm)
+            }
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -85,7 +96,7 @@ android {
     }
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/**"
         }
     }
     buildTypes {
@@ -101,5 +112,13 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
+}
+
+buildConfig {
+    // BuildConfig configuration here.
+    // https://github.com/gmazzo/gradle-buildconfig-plugin#usage-in-kts
+    useKotlinOutput { internalVisibility = true }
+    buildConfigField("boolean", "DEBUG", "$isDebug")
+    buildConfigField("String", "MATRIX_URL", "$matrixUrl")
 }
 
