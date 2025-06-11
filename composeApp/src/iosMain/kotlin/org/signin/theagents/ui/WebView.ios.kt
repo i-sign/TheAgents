@@ -16,7 +16,10 @@ import platform.WebKit.WKWebViewConfiguration
 import platform.darwin.NSObject
 
 @Composable
-actual fun WebView(url: String) {
+actual fun WebView(
+    url: String,
+    onLoginTokenReceived: (String) -> Unit
+) {
     val webView = remember { WKWebView() }
     UIKitView(
         factory = {
@@ -26,7 +29,7 @@ actual fun WebView(url: String) {
                     allowsAirPlayForMediaPlayback = true
                     allowsPictureInPictureMediaPlayback = true
                 }
-                navigationDelegate = WKNavigationDelegate()
+                navigationDelegate = WKNavigationDelegate(onLoginTokenReceived)
 
                 loadRequest(NSURLRequest(NSURL(string = url)))
             }
@@ -35,12 +38,19 @@ actual fun WebView(url: String) {
     )
 }
 
-class WKNavigationDelegate : NSObject(), WKNavigationDelegateProtocol {
+class WKNavigationDelegate(
+    private val onLoginTokenReceived: (String) -> Unit
+) : NSObject(), WKNavigationDelegateProtocol {
     override fun webView(
         webView: WKWebView,
         decidePolicyForNavigationAction: WKNavigationAction,
         decisionHandler: (WKNavigationActionPolicy) -> Unit,
     ) {
+        val url = decidePolicyForNavigationAction.request.URL?.absoluteString ?: ""
+        if (url.contains("/?loginToken=")) {
+            val loginToken = url.split("loginToken=").getOrNull(1) ?: ""
+            onLoginTokenReceived(loginToken)
+        }
         decisionHandler(WKNavigationActionPolicy.WKNavigationActionPolicyAllow)
     }
 
@@ -50,10 +60,9 @@ class WKNavigationDelegate : NSObject(), WKNavigationDelegateProtocol {
             webView.evaluateJavaScript(
                 "document.getElementsByClassName('primary-button')[0].click();",
             ) { result, error ->
-
+                // Handle result or error if needed
             }
         }
     }
-
 }
 

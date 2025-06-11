@@ -14,6 +14,7 @@ import net.folivo.trixnity.client.fromStore
 import net.folivo.trixnity.client.login
 import net.folivo.trixnity.client.serverDiscovery
 import net.folivo.trixnity.clientserverapi.model.authentication.IdentifierType
+import net.folivo.trixnity.clientserverapi.model.authentication.LoginType
 
 class SessionManager(settings: Settings) {
     private var client: MatrixClient? = null
@@ -33,6 +34,21 @@ class SessionManager(settings: Settings) {
         } else {
             return false
         }
+    }
+
+    suspend fun loginWithToken(server: String, loginToken: String) {
+        Napier.d("Login with token [$deviceId]")
+        val url = server.serverDiscovery().getOrNull() ?: Url(server)
+        client = MatrixClient.login(
+            baseUrl = url,
+            mediaStore = getPlatformMediaStore(),
+            repositoriesModule = getPlatformRepositoryModule(),
+            password = null,
+            //loginType = LoginType.Token(loginToken),
+            deviceId = deviceId,
+            configuration = clientConfig
+        ).getOrThrow()
+        deviceId = client?.deviceId
     }
 
     suspend fun login(server: String, username: String, password: String) {
