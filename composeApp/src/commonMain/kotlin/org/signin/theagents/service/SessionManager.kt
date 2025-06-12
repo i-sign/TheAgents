@@ -19,6 +19,8 @@ import net.folivo.trixnity.clientserverapi.model.authentication.LoginType
 class SessionManager(settings: Settings) {
     private var client: MatrixClient? = null
     private var deviceId by settings.nullableString("DEVICE_ID")
+    private var accessToken by settings.nullableString("ACCESS_TOKEN")
+    private var userId by settings.nullableString("USER_ID")
 
     suspend fun tryRestoreSession(): Boolean {
         Napier.d("Try restore session [$deviceId]")
@@ -36,19 +38,45 @@ class SessionManager(settings: Settings) {
         }
     }
 
-    suspend fun loginWithToken(server: String, loginToken: String) {
-        Napier.d("Login with token [$deviceId]")
-        val url = server.serverDiscovery().getOrNull() ?: Url(server)
-        client = MatrixClient.login(
-            baseUrl = url,
-            mediaStore = getPlatformMediaStore(),
-            repositoriesModule = getPlatformRepositoryModule(),
-            password = null,
-            //loginType = LoginType.Token(loginToken),
-            deviceId = deviceId,
-            configuration = clientConfig
-        ).getOrThrow()
-        deviceId = client?.deviceId
+    suspend fun loginWithToken(serverUrl: String, token: String) {
+        try {
+            val serverUrl = Url(serverUrl)
+            //val serverInfo = serverDiscovery(serverUrl)
+            
+            val httpClient = HttpClient {
+                install(Logging) {
+                    logger = object : Logger {
+                        override fun log(message: String) {
+                            Napier.d(message)
+                        }
+                    }
+                    level = LogLevel.INFO
+                }
+            }
+
+            val client = MatrixClient.fromStore(
+                serverUrl = serverUrl,
+                serverInfo = serverInfo,
+                httpClient = httpClient,
+                configuration = MatrixClientConfiguration()
+            )
+
+            val loginResponse = client.login(
+                identifier = IdentifierType.Token(token),
+                token = token
+            )
+
+            // Store credentials
+            deviceId = loginResponse.deviceId
+            accessToken = loginResponse.accessToken
+            userId = loginResponse.userId
+
+            this.client = client
+            Napier.d("Successfully logged in as ${loginResponse.userId}")
+        } catch (e: Exception) {
+            Napier.e("Failed to login", e)
+            throw e
+        }
     }
 
     suspend fun login(server: String, username: String, password: String) {
@@ -100,4 +128,6 @@ class SessionManager(settings: Settings) {
             }
         }
     }
+
+    fun isLoggedIn(): Boolean = client != null && accessToken != null
 }

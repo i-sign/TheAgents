@@ -20,8 +20,6 @@ import org.koin.core.component.inject
 import org.signin.theagents.service.SessionManager
 
 class LoginScreen(private val initialUrl: String = BuildConfig.MATRIX_URL) : Screen, KoinComponent {
-
-
     @Composable
     override fun Content() {
         val sessionManager by inject<SessionManager>()
@@ -30,6 +28,7 @@ class LoginScreen(private val initialUrl: String = BuildConfig.MATRIX_URL) : Scr
 
         var url by remember { mutableStateOf(initialUrl) }
         var loginToken by remember { mutableStateOf("") }
+        var errorMessage by remember { mutableStateOf<String?>(null) }
 
         Box(modifier = Modifier.fillMaxSize()) {
             WebView(
@@ -38,13 +37,12 @@ class LoginScreen(private val initialUrl: String = BuildConfig.MATRIX_URL) : Scr
                     loginToken = token
                     scope.launch {
                         try {
-                            //sessionManager.loginWithToken(BuildConfig.MATRIX_URL, token)
                             sessionManager.loginWithToken("https://chat-int.finnomena.com", token)
-                            // Navigate to next screen after successful login
-                            // navigator.push(NextScreen())
-                            println("Login success")
+                            // Navigate to HomeScreen after successful login
+                            navigator.push(HomeScreen())
                         } catch (e: Exception) {
-                            println("Login failed: ${e.message}")
+                            errorMessage = "Login failed: ${e.message}"
+                            println(errorMessage)
                         }
                     }
                 }
