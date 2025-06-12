@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.buildConfig)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kspDevTools)
 }
 
 val localProps = Properties()
@@ -47,7 +48,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.trixnity.client.media.okio)
-            implementation(libs.trixnity.client.repository.realm)
+            implementation(libs.androidx.sqlite3.bundled)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -68,13 +69,14 @@ kotlin {
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.logging)
             implementation(libs.multiplatform.settings)
+            implementation(libs.trixnity.client.repository.room)
 
         }
         iosMain {
             dependencies {
                 implementation(libs.ktor.client.darwin)
                 implementation(libs.trixnity.client.media.okio)
-                implementation(libs.trixnity.client.repository.realm)
+                implementation(libs.androidx.sqlite3.bundled)
             }
         }
         commonTest.dependencies {

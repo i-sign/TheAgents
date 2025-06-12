@@ -11,10 +11,14 @@ import io.ktor.http.Url
 import net.folivo.trixnity.client.MatrixClient
 import net.folivo.trixnity.client.MatrixClientConfiguration
 import net.folivo.trixnity.client.fromStore
+import net.folivo.trixnity.client.store.RootStore
 import net.folivo.trixnity.client.login
+import net.folivo.trixnity.client.loginWithToken
 import net.folivo.trixnity.client.serverDiscovery
 import net.folivo.trixnity.clientserverapi.model.authentication.IdentifierType
 import net.folivo.trixnity.clientserverapi.model.authentication.LoginType
+import net.folivo.trixnity.core.model.UserId
+import org.koin.core.module.Module
 
 class SessionManager(settings: Settings) {
     private var client: MatrixClient? = null
@@ -22,112 +26,40 @@ class SessionManager(settings: Settings) {
     private var accessToken by settings.nullableString("ACCESS_TOKEN")
     private var userId by settings.nullableString("USER_ID")
 
-    suspend fun tryRestoreSession(): Boolean {
-        Napier.d("Try restore session [$deviceId]")
-        val restored = MatrixClient.fromStore(
-            mediaStore = getPlatformMediaStore(),
-            repositoriesModule = getPlatformRepositoryModule(),
-            configuration = clientConfig
-        ).getOrNull()
 
-        if (restored != null) {
-            client = restored
-            return true
-        } else {
-            return false
-        }
-    }
-
-    suspend fun loginWithToken(serverUrl: String, token: String) {
+    suspend fun loginWithToken(serverUrl: String, loginToken: String) {
         try {
-            val serverUrl = Url(serverUrl)
+            val chatServerUrl = Url(serverUrl)
             //val serverInfo = serverDiscovery(serverUrl)
-            
-            val httpClient = HttpClient {
-                install(Logging) {
-                    logger = object : Logger {
-                        override fun log(message: String) {
-                            Napier.d(message)
-                        }
-                    }
-                    level = LogLevel.INFO
-                }
-            }
 
-            val client = MatrixClient.fromStore(
-                serverUrl = serverUrl,
-                serverInfo = serverInfo,
-                httpClient = httpClient,
-                configuration = MatrixClientConfiguration()
-            )
 
-            val loginResponse = client.login(
-                identifier = IdentifierType.Token(token),
-                token = token
-            )
+val a = getPlatformRepositoryModule()
+            val b = getPlatformCreateMediaStoreModule()
 
-            // Store credentials
-            deviceId = loginResponse.deviceId
-            accessToken = loginResponse.accessToken
-            userId = loginResponse.userId
+         val client =   MatrixClient.loginWithToken(
+                baseUrl = chatServerUrl,
+                token = loginToken,
+                repositoriesModule = a,
+                mediaStoreModule = b,
+            ).getOrNull()
 
-            this.client = client
-            Napier.d("Successfully logged in as ${loginResponse.userId}")
+
+            Napier.e( "Successful to login"+client?.loginState.toString())
         } catch (e: Exception) {
             Napier.e("Failed to login", e)
             throw e
         }
     }
 
-    suspend fun login(server: String, username: String, password: String) {
-        Napier.d("Open session [$deviceId]")
-        val url = server.serverDiscovery().getOrNull() ?: Url(server)
-        client = MatrixClient.login(
-            baseUrl = url,
-            mediaStore = getPlatformMediaStore(),
+    suspend fun initFromStore(
+        userId: UserId,
+    ): Result<MatrixClient?> = kotlin.runCatching {
+        Napier.e { "initFromStore (userId=$userId)" }
+        MatrixClient.fromStore(
             repositoriesModule = getPlatformRepositoryModule(),
-            identifier = IdentifierType.User(username),
-            password = password,
-            deviceId = deviceId,
-            configuration = clientConfig
+            mediaStoreModule = getPlatformCreateMediaStoreModule(),
         ).getOrThrow()
-        deviceId = client?.deviceId
     }
 
-    suspend fun logout() {
-        Napier.d("End session")
-        client?.apply {
-            logout()
-            clearCache()
-            clearMediaCache()
-            stop()
-        }
-        client = null
-    }
 
-    fun stop() {
-        Napier.d("Stop session")
-        client?.stop()
-        client = null
-    }
-
-    fun getClient() = client ?: error("Session client is NULL!")
-
-    private val clientConfig: MatrixClientConfiguration.() -> Unit = {
-        httpClientFactory = {
-            HttpClient {
-                it()
-                install(Logging) {
-                    level = LogLevel.ALL
-                    logger = object : Logger {
-                        override fun log(message: String) {
-                            Napier.d(tag = "HTTP Client", message = message)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    fun isLoggedIn(): Boolean = client != null && accessToken != null
 }

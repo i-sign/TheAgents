@@ -36,7 +36,7 @@ internal fun App(systemAppearance: (isLight: Boolean) -> Unit = {}) {
     DisposableEffect(Unit) {
         onDispose {
             Napier.d("Stop application")
-            sessionManager.stop()
+            //sessionManager.stop()
         }
     }
     CompositionLocalProvider(
@@ -53,12 +53,10 @@ internal fun App(systemAppearance: (isLight: Boolean) -> Unit = {}) {
             AppTheme(systemAppearance) {
                 var launchScreen by remember { mutableStateOf<Screen?>(null) }
                 LaunchedEffect(Unit) {
-                    val hasPreviousSession = sessionManager.tryRestoreSession()
-                    launchScreen = if (hasPreviousSession) {
-                        return@LaunchedEffect
-                    } else {
-                        LoginScreen()
-                    }
+                    //val hasPreviousSession = sessionManager.tryRestoreSession()
+
+                    launchScreen = LoginScreen()
+
                 }
                 launchScreen?.let { Navigator(it) }
             }
@@ -81,7 +79,7 @@ private fun initApp() {
     val appModule = module {
         single { getPlatformSettings() }
         single { SessionManager(get()) }
-        factory { get<SessionManager>().getClient() }
+       // factory { get<SessionManager>().getClient() }
     }
     startKoin {
         modules(appModule)

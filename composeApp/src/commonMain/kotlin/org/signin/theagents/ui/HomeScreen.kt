@@ -21,25 +21,9 @@ class HomeScreen : Screen, KoinComponent {
     @Composable
     override fun Content() {
         val sessionManager by inject<SessionManager>()
-        val client = sessionManager.getClient()
+        //val client = sessionManager.getClient()
         val navigator = LocalNavigator.currentOrThrow
 
-        LaunchedEffect(Unit) {
-            client.startSync()
-            client.loginState.onEach { loginState ->
-                when (loginState) {
-                    MatrixClient.LoginState.LOGGED_OUT_SOFT -> {
-                        // TODO only ask for password
-                    }
-                    MatrixClient.LoginState.LOGGED_OUT -> {
-                        navigator.replaceAll(LoginScreen())
-                    }
-                    else -> {
-                        Napier.d("Home screen - Login state: $loginState")
-                    }
-                }
-            }.collect()
-        }
 
         Column(
             modifier = Modifier
@@ -56,7 +40,7 @@ class HomeScreen : Screen, KoinComponent {
             Spacer(modifier = Modifier.height(16.dp))
             
             Text(
-                text = "Logged in as: ${client.userId}",
+                text = "Logged in as:",
                 style = MaterialTheme.typography.bodyLarge
             )
             
