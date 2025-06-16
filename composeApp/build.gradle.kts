@@ -47,7 +47,6 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.ktor.client.okhttp)
-            api(libs.trixnity.client.media.okio)
             implementation(libs.androidx.sqlite3.bundled)
         }
         commonMain.dependencies {
@@ -70,12 +69,11 @@ kotlin {
             implementation(libs.ktor.logging)
             implementation(libs.multiplatform.settings)
             api(libs.trixnity.client.repository.room)
+            api(libs.trixnity.client.media.okio)
         }
         iosMain {
             dependencies {
                 implementation(libs.ktor.client.darwin)
-                implementation(libs.trixnity.client.repository.room)
-                api(libs.trixnity.client.media.okio)
                 implementation(libs.androidx.sqlite3.bundled)
             }
         }

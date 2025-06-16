@@ -79,7 +79,7 @@ private fun initApp() {
     val appModule = module {
         single { getPlatformSettings() }
         single { SessionManager(get()) }
-       //factory { get<SessionManager>().getClient() }
+        //factory { get<SessionManager>().getClient() }
     }
     startKoin {
         modules(appModule)

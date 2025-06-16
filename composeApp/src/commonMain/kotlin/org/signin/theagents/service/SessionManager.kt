@@ -6,6 +6,8 @@ import io.github.aakira.napier.Napier
 import io.ktor.http.Url
 import net.folivo.trixnity.client.MatrixClient
 import net.folivo.trixnity.client.fromStore
+import net.folivo.trixnity.client.login
+import net.folivo.trixnity.client.loginWith
 import net.folivo.trixnity.client.loginWithToken
 import net.folivo.trixnity.core.model.UserId
 
@@ -20,7 +22,8 @@ class SessionManager(settings: Settings) {
         try {
             val chatServerUrl = Url(serverUrl)
             //val serverInfo = serverDiscovery(serverUrl)
-           var client =MatrixClient.loginWithToken(
+            var client = MatrixClient.loginWithToken(
+                identifier = null,
                 baseUrl = chatServerUrl,
                 repositoriesModule = getPlatformRepositoryModule(),
                 mediaStoreModule = getPlatformCreateMediaStoreModule(),
