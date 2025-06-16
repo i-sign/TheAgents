@@ -39,7 +39,7 @@ class LoginScreen(private val initialUrl: String = BuildConfig.MATRIX_URL) : Scr
                         try {
                             sessionManager.loginWithToken("https://chat-int.finnomena.com", token)
                             // Navigate to HomeScreen after successful login
-                            navigator.push(HomeScreen())
+                            //navigator.push(HomeScreen())
                         } catch (e: Exception) {
                             errorMessage = "Login failed: ${e.message}"
                             println(errorMessage)

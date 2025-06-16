@@ -47,7 +47,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.ktor.client.okhttp)
-            implementation(libs.trixnity.client.media.okio)
+            api(libs.trixnity.client.media.okio)
             implementation(libs.androidx.sqlite3.bundled)
         }
         commonMain.dependencies {
@@ -64,18 +64,18 @@ kotlin {
             implementation(libs.napier)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
-            implementation(libs.koin.core)
-            implementation(libs.trixnity.client)
+            api(libs.koin.core)
+            api(libs.trixnity.client)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.logging)
             implementation(libs.multiplatform.settings)
-            implementation(libs.trixnity.client.repository.room)
-
+            api(libs.trixnity.client.repository.room)
         }
         iosMain {
             dependencies {
                 implementation(libs.ktor.client.darwin)
-                implementation(libs.trixnity.client.media.okio)
+                implementation(libs.trixnity.client.repository.room)
+                api(libs.trixnity.client.media.okio)
                 implementation(libs.androidx.sqlite3.bundled)
             }
         }
