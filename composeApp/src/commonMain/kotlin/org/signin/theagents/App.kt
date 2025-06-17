@@ -19,7 +19,9 @@ import org.signin.theagents.service.getLogger
 import org.signin.theagents.service.getPlatformSettings
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
+import kotlinx.coroutines.runBlocking
 import org.signin.theagents.theme.AppTheme
+import org.signin.theagents.ui.HomeScreen
 import org.signin.theagents.ui.LoginScreen
 
 internal val LocalAppScope =
@@ -36,7 +38,7 @@ internal fun App(systemAppearance: (isLight: Boolean) -> Unit = {}) {
     DisposableEffect(Unit) {
         onDispose {
             Napier.d("Stop application")
-            //sessionManager.stop()
+            runBlocking { sessionManager.stop() }
         }
     }
     CompositionLocalProvider(
@@ -53,9 +55,12 @@ internal fun App(systemAppearance: (isLight: Boolean) -> Unit = {}) {
             AppTheme(systemAppearance) {
                 var launchScreen by remember { mutableStateOf<Screen?>(null) }
                 LaunchedEffect(Unit) {
-                    //val hasPreviousSession = sessionManager.tryRestoreSession()
-
-                    launchScreen = LoginScreen()
+                    val hasPreviousSession = sessionManager.tryRestoreSession()
+                    launchScreen = if (hasPreviousSession) {
+                        HomeScreen()
+                    } else {
+                        LoginScreen()
+                    }
 
                 }
                 launchScreen?.let { Navigator(it) }
@@ -79,7 +84,7 @@ private fun initApp() {
     val appModule = module {
         single { getPlatformSettings() }
         single { SessionManager(get()) }
-        //factory { get<SessionManager>().getClient() }
+        factory { get<SessionManager>().getClient() }
     }
     startKoin {
         modules(appModule)

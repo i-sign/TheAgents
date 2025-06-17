@@ -14,3 +14,5 @@ value class RootPath(val path: Path) {
     fun forAccountMedia(userId: UserId) = forAccount(userId).resolve("media")
     private fun UserId.asFilesystemSafeString() = full.encodeToByteArray().toByteString().sha256().base64Url()
 }
+
+expect fun platformPathsModule(): Module

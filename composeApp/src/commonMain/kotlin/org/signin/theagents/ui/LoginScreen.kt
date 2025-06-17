@@ -14,18 +14,10 @@ import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import io.github.aakira.napier.Napier
-import io.ktor.http.Url
 import kotlinx.coroutines.launch
-import net.folivo.trixnity.client.MatrixClient
-import net.folivo.trixnity.client.loginWithToken
-import net.folivo.trixnity.client.media.createInMemoryMediaStoreModule
-import net.folivo.trixnity.client.store.repository.createInMemoryRepositoriesModule
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.signin.theagents.service.SessionManager
-import org.signin.theagents.service.getPlatformCreateMediaStoreModule
-import org.signin.theagents.service.getPlatformRepositoryModule
 
 class LoginScreen(private val initialUrl: String = BuildConfig.MATRIX_URL) : Screen, KoinComponent {
     @Composable
@@ -45,19 +37,8 @@ class LoginScreen(private val initialUrl: String = BuildConfig.MATRIX_URL) : Scr
                     loginToken = token
                     scope.launch {
                         try {
-
-                                val chatServerUrl = Url("https://chat-int.finnomena.com")
-
-                                var client = MatrixClient.loginWithToken(
-                                    identifier = null,
-                                    baseUrl = chatServerUrl,
-                                    repositoriesModule = createInMemoryRepositoriesModule(),
-                                    mediaStoreModule = createInMemoryMediaStoreModule(),
-                                    token = loginToken
-                                ).getOrThrow()
-
-                                println("Successful to login" + client.displayName.value ?: "N/A")
-
+                            sessionManager.loginWithToken("https://chat-int.finnomena.com", loginToken)
+                            navigator.replace(HomeScreen())
 
                         } catch (e: Exception) {
                             errorMessage = "Login failed: ${e.message}"

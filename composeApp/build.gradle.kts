@@ -1,8 +1,5 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 import java.util.Properties
 
 plugins {
@@ -69,6 +66,7 @@ kotlin {
             implementation(libs.ktor.logging)
             implementation(libs.multiplatform.settings)
             api(libs.trixnity.client.repository.room)
+            implementation(libs.trixnity.crypto.core)
             api(libs.trixnity.client.media.okio)
         }
         iosMain {

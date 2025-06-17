@@ -27,71 +27,7 @@ import okio.FileSystem
 
 
 actual fun getPlatformSettings(): Settings = SharedPreferencesSettings(
-    AndroidApp.INSTANCE.getSharedPreferences("SmalkPreferences", Context.MODE_PRIVATE)
+    AndroidApp.INSTANCE.getSharedPreferences("TheAgentsSettings", Context.MODE_PRIVATE)
 )
 
 actual fun getLogger(defaultTag: String): DebugAntilog = DebugAntilog(defaultTag)
-
-actual fun createDateFormat(pattern: String) = object : (Instant) -> String {
-    private val formatter = SimpleDateFormat(pattern)
-    override fun invoke(instant: Instant) = formatter.format(instant.toEpochMilliseconds())
-}
-
-actual fun getPlatformRepositoryModule(): Module = module{
-    single<CreateRepositoriesModule> {
-        val rootPath = get<RootPath>()
-        val fileSystem = get<FileSystem>()
-        val context = get<Context>()
-
-        object : CreateRepositoriesModule {
-            override suspend fun generateDatabaseKey(): ByteArray? = null
-            override suspend fun create(userId: UserId, databaseKey: ByteArray?): Module {
-                fileSystem.createDirectories(
-                    rootPath.forAccountDatabase(userId),
-                    mustCreate = false
-                )
-                return createRoomRepositoriesModule(db(userId))
-            }
-
-            override suspend fun load(userId: UserId, databaseKey: ByteArray?): Module {
-                return createRoomRepositoriesModule(db(userId))
-            }
-
-            private fun db(userId: UserId): RoomDatabase.Builder<TrixnityRoomDatabase> =
-                Room.databaseBuilder<TrixnityRoomDatabase>(
-                    context,
-                    rootPath.forAccountDatabase(userId).resolve("database").toString()
-                ).apply {
-                    setDriver(BundledSQLiteDriver())
-                }
-        }
-    }
-}
-
-actual fun getPlatformCreateMediaStoreModule(): Module = module {
-    single<CreateMediaStoreModule> {
-        val rootPath = get<RootPath>()
-        val filesystem = get<FileSystem>()
-        CreateMediaStoreModule { userId ->
-            withContext(Dispatchers.IO) {
-                createOkioMediaStoreModule(
-                    basePath = rootPath.forAccountMedia(userId),
-                    fileSystem = filesystem
-                )
-            }
-        }
-    }
-}
-
-
-
-private fun getCacheDirectoryPath(): Path =
-    AndroidApp.INSTANCE.cacheDir.absolutePath.toPath().resolve("cache")
-
-actual fun platformPathsModule(): Module = module {
-    single { okio.FileSystem.SYSTEM }
-    single<RootPath> {
-        val context = get<Context>()
-        RootPath(context.filesDir.toOkioPath())
-    }
-}
