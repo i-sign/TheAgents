@@ -1,10 +1,9 @@
-package org.signin.theagents.ui
+package org.signin.theagents.ui.auth
 
 import TheAgents.composeApp.BuildConfig
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,6 +17,8 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.signin.theagents.service.SessionManager
+import org.signin.theagents.service.WebView
+import org.signin.theagents.ui.home.HomeScreen
 
 class LoginScreen(private val initialUrl: String = BuildConfig.MATRIX_URL) : Screen, KoinComponent {
 
@@ -41,7 +42,7 @@ class LoginScreen(private val initialUrl: String = BuildConfig.MATRIX_URL) : Scr
                             //sessionManager.loginWithToken(BuildConfig.MATRIX_URL, token)
                             sessionManager.loginWithToken("https://chat-int.finnomena.com", token)
                             // Navigate to next screen after successful login
-                            // navigator.push(NextScreen())
+                            navigator.push(HomeScreen())
                             println("Login success")
                         } catch (e: Exception) {
                             println("Login failed: ${e.message}")
@@ -52,9 +53,3 @@ class LoginScreen(private val initialUrl: String = BuildConfig.MATRIX_URL) : Scr
         }
     }
 }
-
-@Composable
-expect fun WebView(
-    url: String,
-    onLoginTokenReceived: (String) -> Unit
-)

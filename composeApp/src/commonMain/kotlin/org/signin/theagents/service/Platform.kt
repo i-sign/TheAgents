@@ -13,3 +13,8 @@ expect fun createDateFormat(pattern: String): (instant: Instant) -> String
 expect suspend fun getPlatformRepositoryModule(): Module
 expect suspend fun getPlatformMediaStore(): MediaStore
 
+@Composable
+expect fun WebView(
+    url: String,
+    onLoginTokenReceived: (String) -> Unit
+)

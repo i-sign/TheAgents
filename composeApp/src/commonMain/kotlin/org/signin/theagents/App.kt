@@ -20,7 +20,8 @@ import org.signin.theagents.service.getPlatformSettings
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
 import org.signin.theagents.theme.AppTheme
-import org.signin.theagents.ui.LoginScreen
+import org.signin.theagents.ui.home.HomeScreen
+import org.signin.theagents.ui.auth.LoginScreen
 
 internal val LocalAppScope =
     compositionLocalOf<CoroutineScope> { error("LocalAppScope is not provided") }
@@ -55,7 +56,7 @@ internal fun App(systemAppearance: (isLight: Boolean) -> Unit = {}) {
                 LaunchedEffect(Unit) {
                     val hasPreviousSession = sessionManager.tryRestoreSession()
                     launchScreen = if (hasPreviousSession) {
-                        return@LaunchedEffect
+                        HomeScreen()
                     } else {
                         LoginScreen()
                     }
