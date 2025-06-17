@@ -43,8 +43,9 @@ class SessionManager(settings: Settings) {
             baseUrl = url,
             mediaStore = getPlatformMediaStore(),
             repositoriesModule = getPlatformRepositoryModule(),
-            password = null,
-            //loginType = LoginType.Token(loginToken),
+            token = loginToken,
+            password = "",
+            loginType = LoginType.Token() ,
             deviceId = deviceId,
             configuration = clientConfig
         ).getOrThrow()
