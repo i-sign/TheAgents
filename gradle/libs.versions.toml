@@ -24,6 +24,7 @@ kotlinx-datetime = "0.4.1"
 koin = "4.0.4"
 multiplatform-settings = "1.3.0"
 trixnity = "4.16.3"
+trixnity-realm = "4.11.2"
 ktor = "3.1.3"
 voyager = "1.0.0-rc07"
 kspDevTools = "1.9.23-1.0.19"
@@ -62,7 +63,7 @@ trixnity-client-repository-indexeddb = { module = "net.folivo:trixnity-client-re
 trixnity-client-media-okio = { module = "net.folivo:trixnity-client-media-okio", version.ref = "trixnity" }
 trixnity-client-media-opfs = { module = "net.folivo:trixnity-client-media-opfs", version.ref = "trixnity" }
 trixnity-client-media-indexeddb = { module = "net.folivo:trixnity-client-media-indexeddb", version.ref = "trixnity" }
-
+trixnity-client-repository-realm = { module = "net.folivo:trixnity-client-repository-realm", version.ref = "trixnity-realm" }
 voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
 
 

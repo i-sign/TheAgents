@@ -45,6 +45,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.androidx.sqlite3.bundled)
+            implementation(libs.trixnity.client.repository.realm)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -73,6 +74,7 @@ kotlin {
             dependencies {
                 implementation(libs.ktor.client.darwin)
                 implementation(libs.androidx.sqlite3.bundled)
+                implementation(libs.trixnity.client.repository.realm)
             }
         }
         commonTest.dependencies {

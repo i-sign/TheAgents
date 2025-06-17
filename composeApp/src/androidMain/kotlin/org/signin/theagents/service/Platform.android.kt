@@ -18,7 +18,9 @@ import org.signin.theagents.AndroidApp
 import java.text.SimpleDateFormat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import net.folivo.trixnity.client.media.okio.OkioMediaStore
 import net.folivo.trixnity.client.media.okio.createOkioMediaStoreModule
+import net.folivo.trixnity.client.store.repository.realm.createRealmRepositoriesModule
 import net.folivo.trixnity.client.store.repository.room.TrixnityRoomDatabase
 import net.folivo.trixnity.client.store.repository.room.createRoomRepositoriesModule
 import okio.Path.Companion.toOkioPath
@@ -31,3 +33,13 @@ actual fun getPlatformSettings(): Settings = SharedPreferencesSettings(
 )
 
 actual fun getLogger(defaultTag: String): DebugAntilog = DebugAntilog(defaultTag)
+
+
+private fun getCacheDirectoryPath(): Path =
+    AndroidApp.INSTANCE.cacheDir.absolutePath.toPath().resolve("cache")
+
+actual suspend fun getPlatformRepositoryModule(): Module = createRealmRepositoriesModule {
+    directory(getCacheDirectoryPath().resolve("realm").toString())
+}
+
+actual suspend fun getPlatformMediaStore(): Module = createOkioMediaStoreModule(basePath = getCacheDirectoryPath().resolve("media"))

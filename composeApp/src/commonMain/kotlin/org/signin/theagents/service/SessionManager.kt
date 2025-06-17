@@ -17,7 +17,7 @@ import net.folivo.trixnity.client.loginWithToken
 import net.folivo.trixnity.client.media.createInMemoryMediaStoreModule
 import net.folivo.trixnity.client.media.createMediaModule
 import net.folivo.trixnity.client.store.repository.createInMemoryRepositoriesModule
-import net.folivo.trixnity.client.store.repository.room.createRoomRepositoriesModule
+import net.folivo.trixnity.clientserverapi.model.media.CreateMedia
 import net.folivo.trixnity.core.model.UserId
 import org.signin.theagents.CreateRepositoriesModule
 import org.signin.theagents.platformCreateMediaStoreModuleModule
@@ -30,6 +30,19 @@ class SessionManager(settings: Settings) {
     suspend fun loginWithToken(serverUrl: String, loginToken: String) {
         try {
             val chatServerUrl = Url(serverUrl)
+
+
+            /*
+               baseUrl: Url,
+    identifier: IdentifierType? = null,
+    token: String,
+    deviceId: String? = null,
+    initialDeviceDisplayName: String? = null,
+    repositoriesModule: Module,
+    mediaStoreModule: Module,
+    coroutineContext: CoroutineContext = Dispatchers.Default,
+    configuration: MatrixClientConfiguration.() -> Unit = {},
+             */
 
             client = MatrixClient.loginWithToken(
                 identifier = null,
@@ -58,6 +71,7 @@ class SessionManager(settings: Settings) {
             mediaStoreModule = createInMemoryMediaStoreModule(),
             configuration = clientConfig
         ).getOrNull()
+
 
         if (restored != null) {
             client = restored

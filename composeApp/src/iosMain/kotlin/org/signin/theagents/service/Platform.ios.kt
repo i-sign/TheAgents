@@ -10,7 +10,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Instant
+import net.folivo.trixnity.client.media.MediaStore
+import net.folivo.trixnity.client.media.okio.OkioMediaStore
 import net.folivo.trixnity.client.media.okio.createOkioMediaStoreModule
+import net.folivo.trixnity.client.store.repository.realm.createRealmRepositoriesModule
 import net.folivo.trixnity.client.store.repository.room.TrixnityRoomDatabase
 import net.folivo.trixnity.client.store.repository.room.createRoomRepositoriesModule
 import net.folivo.trixnity.core.model.UserId
@@ -34,3 +37,21 @@ actual fun getPlatformSettings(): Settings = NSUserDefaultsSettings(
 )
 
 actual fun getLogger(defaultTag: String): DebugAntilog = DebugAntilog(defaultTag)
+
+private fun getCacheDirectoryPath(): Path {
+    val cacheDir = NSSearchPathForDirectoriesInDomains(
+        NSCachesDirectory,
+        NSUserDomainMask,
+        true
+    ).first() as String
+    return "$cacheDir/cache".toPath()
+}
+
+actual suspend fun getPlatformRepositoryModule(): Module = createRealmRepositoriesModule {
+    directory(getCacheDirectoryPath().resolve("realm").toString())
+}
+
+
+actual suspend fun getPlatformMediaStore(): Module = createOkioMediaStoreModule(
+    getCacheDirectoryPath().resolve("media")
+)
